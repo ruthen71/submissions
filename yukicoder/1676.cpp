@@ -2,8 +2,8 @@
 using namespace std;
 
 // clang-format off
-//#include <atcoder/all>
-//using namespace atcoder;
+#include <atcoder/segtree>
+using namespace atcoder;
 using ll = long long;
 using ld = long double;
 using pii = pair<int, int>;
@@ -80,54 +80,31 @@ ll modpow(ll a, ll N, ll mod) {
 }
 
 int main() {
-    IOS;
-    ll N, W;
-    cin >> N >> W;
-    vll v(N), w(N);
-    rep(N) cin >> v[i] >> w[i];
-
-    ll N2 = N / 2;
-    V1<pll> h1((1 << N2)), h2((1 << (N - N2)));
-    rep(i, (1 << N2)) {
-        ll sv = 0, sw = 0;
-        rep(j, N2) {
-            if (i >> j & 1) {
-                sv += v[j];
-                sw += w[j];
-            }
+    // IOS;
+    int N, K;
+    cin >> N >> K;
+    vll dp(N, 0);
+    vll a(N);
+    ll cmax = 0;
+    rep(i, N) {
+        ll A, M;
+        cin >> A >> M;
+        a[i] = A;
+        ll cmax2 = 0;
+        rep(j, M) {
+            int B;
+            cin >> B;
+            B--;
+            chmax(cmax2, dp[B] + A - a[B]);
         }
-        h1[i] = make_pair(sw, sv);
+        dp[i] = max(cmax, cmax2);
+        chmax(cmax, dp[i]);
     }
-    sort(all(h1));
-    ll cnt = 1;
-    rep(i, 1, (1 << N2)) {
-        if (h1[cnt - 1].se < h1[i].se) {
-            h1[cnt++] = h1[i];
-        }
-    }
-    ll pop = (1 << N2) - cnt;
-    rep(pop) h1.pop_back();
-
-    ll ans = 0;
-    rep(i, (1 << (N - N2))) {
-        ll sv = 0, sw = 0;
-        rep(j, N - N2) {
-            if (i >> j & 1) {
-                sv += v[N2 + j];
-                sw += w[N2 + j];
-            }
-        }
-        h2[i] = make_pair(sw, sv);
-        if (sw > W) continue;
-        int ind = lower_bound(all(h1), make_pair(W - sw, 1)) - h1.begin();
-        if (ind) chmax(ans, sv + h1[ind - 1].se);
-    }
-    cout << ans << endl;
+    cout << dp[N - 1] << endl;
     return 0;
 }
 /*
 メモ
-半分全列挙
-巨大ナップサック問題
-蟻本p149の実装を参考に
+DPする
+DP[i]はBiとして存在する値から飛んでくる
 */

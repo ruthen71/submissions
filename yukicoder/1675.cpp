@@ -2,8 +2,8 @@
 using namespace std;
 
 // clang-format off
-//#include <atcoder/all>
-//using namespace atcoder;
+#include <atcoder/segtree>
+using namespace atcoder;
 using ll = long long;
 using ld = long double;
 using pii = pair<int, int>;
@@ -79,55 +79,54 @@ ll modpow(ll a, ll N, ll mod) {
     return res;
 }
 
+ll op(ll a, ll b) { return min(a, b); }
+
+ll e() { return INF; }
+
 int main() {
-    IOS;
-    ll N, W;
-    cin >> N >> W;
-    vll v(N), w(N);
-    rep(N) cin >> v[i] >> w[i];
-
-    ll N2 = N / 2;
-    V1<pll> h1((1 << N2)), h2((1 << (N - N2)));
-    rep(i, (1 << N2)) {
-        ll sv = 0, sw = 0;
-        rep(j, N2) {
-            if (i >> j & 1) {
-                sv += v[j];
-                sw += w[j];
-            }
-        }
-        h1[i] = make_pair(sw, sv);
+    // IOS;
+    int N, Q;
+    cin >> N >> Q;
+    V1<P<ll, pii>> lrB(Q);
+    rep(Q) {
+        cin >> lrB[i].se.fi >> lrB[i].se.se >> lrB[i].fi;
+        lrB[i].se.fi--, lrB[i].se.se--;
     }
-    sort(all(h1));
-    ll cnt = 1;
-    rep(i, 1, (1 << N2)) {
-        if (h1[cnt - 1].se < h1[i].se) {
-            h1[cnt++] = h1[i];
+    sort(all(lrB));
+    reverse(all(lrB));
+    segtree<ll, op, e> Seg(N);
+    set<int> Set;
+    rep(i, N + 1) Set.insert(i);
+    rep(i, Q) {
+        int l = lrB[i].se.fi, r = lrB[i].se.se, B = lrB[i].fi;
+        while (1) {
+            auto itr = Set.lower_bound(l);
+            if ((*itr) > r) break;
+            Seg.set((*itr), B);
+            Set.erase(itr);
+        }
+        int m = Seg.prod(l, r + 1);
+        if (m > B) {
+            cout << -1 << endl;
+            return 0;
         }
     }
-    ll pop = (1 << N2) - cnt;
-    rep(pop) h1.pop_back();
-
-    ll ans = 0;
-    rep(i, (1 << (N - N2))) {
-        ll sv = 0, sw = 0;
-        rep(j, N - N2) {
-            if (i >> j & 1) {
-                sv += v[N2 + j];
-                sw += w[N2 + j];
-            }
-        }
-        h2[i] = make_pair(sw, sv);
-        if (sw > W) continue;
-        int ind = lower_bound(all(h1), make_pair(W - sw, 1)) - h1.begin();
-        if (ind) chmax(ans, sv + h1[ind - 1].se);
+    vll ans(N);
+    rep(i, N) ans[i] = Seg.get(i);
+    rep(i, N) if (ans[i] == INF) ans[i] = 1000000000;
+    rep(i, N) {
+        if (i) cout << " ";
+        cout << ans[i];
     }
-    cout << ans << endl;
+    cout << endl;
     return 0;
 }
 /*
 メモ
-半分全列挙
-巨大ナップサック問題
-蟻本p149の実装を参考に
+構築
+RMQを満たす数列の構築
+Bの大きい順にソートする
+各要素につき高々1回しか更新されないので、setに値が未確定の値を挿入
+セグメントツリーで実際に更新する
+セグメント木
 */

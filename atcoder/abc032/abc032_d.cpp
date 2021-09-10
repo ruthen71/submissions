@@ -85,49 +85,78 @@ int main() {
     cin >> N >> W;
     vll v(N), w(N);
     rep(N) cin >> v[i] >> w[i];
-
-    ll N2 = N / 2;
-    V1<pll> h1((1 << N2)), h2((1 << (N - N2)));
-    rep(i, (1 << N2)) {
-        ll sv = 0, sw = 0;
-        rep(j, N2) {
-            if (i >> j & 1) {
-                sv += v[j];
-                sw += w[j];
+    if (N <= 30) {
+        ll N2 = N / 2;
+        V1<pll> h1((1 << N2)), h2((1 << (N - N2)));
+        rep(i, (1 << N2)) {
+            ll sv = 0, sw = 0;
+            rep(j, N2) {
+                if (i >> j & 1) {
+                    sv += v[j];
+                    sw += w[j];
+                }
+            }
+            h1[i] = make_pair(sw, sv);
+        }
+        sort(all(h1));
+        ll cnt = 1;
+        rep(i, 1, (1 << N2)) {
+            if (h1[cnt - 1].se < h1[i].se) {
+                h1[cnt++] = h1[i];
             }
         }
-        h1[i] = make_pair(sw, sv);
+        ll pop = (1 << N2) - cnt;
+        rep(pop) h1.pop_back();
+
+        ll ans = 0;
+        rep(i, (1 << (N - N2))) {
+            ll sv = 0, sw = 0;
+            rep(j, N - N2) {
+                if (i >> j & 1) {
+                    sv += v[N2 + j];
+                    sw += w[N2 + j];
+                }
+            }
+            h2[i] = make_pair(sw, sv);
+            if (sw > W) continue;
+            int ind = lower_bound(all(h1), make_pair(W - sw, INF)) - h1.begin();
+            if (ind) chmax(ans, sv + h1[ind - 1].se);
+        }
+        cout << ans << endl;
+        return 0;
     }
-    sort(all(h1));
-    ll cnt = 1;
-    rep(i, 1, (1 << N2)) {
-        if (h1[cnt - 1].se < h1[i].se) {
-            h1[cnt++] = h1[i];
+    ll wmax = 0, vmax = 0;
+    rep(N) chmax(wmax, w[i]), chmax(vmax, v[i]);
+    if (wmax <= 1000) {
+        vll dp(W + 1, 0);
+        rep(i, N) {
+            rrep(j, W + 1) {
+                if (j + w[i] <= W) chmax(dp[j + w[i]], dp[j] + v[i]);
+            }
+        }
+        ll ans = 0;
+        rep(W + 1) chmax(ans, dp[i]);
+        cout << ans << endl;
+        return 0;
+    }
+    ll V = vmax * N;
+    vll dp(V + 1, INF);
+    dp[0] = 0;
+    rep(i, N) {
+        rrep(j, V + 1) {
+            if (j + v[i] <= V) chmin(dp[j + v[i]], dp[j] + w[i]);
         }
     }
-    ll pop = (1 << N2) - cnt;
-    rep(pop) h1.pop_back();
-
     ll ans = 0;
-    rep(i, (1 << (N - N2))) {
-        ll sv = 0, sw = 0;
-        rep(j, N - N2) {
-            if (i >> j & 1) {
-                sv += v[N2 + j];
-                sw += w[N2 + j];
-            }
-        }
-        h2[i] = make_pair(sw, sv);
-        if (sw > W) continue;
-        int ind = lower_bound(all(h1), make_pair(W - sw, 1)) - h1.begin();
-        if (ind) chmax(ans, sv + h1[ind - 1].se);
-    }
+    rep(V + 1) if (dp[i] <= W) ans = i;
     cout << ans << endl;
     return 0;
 }
 /*
 メモ
+ナップサック解法詰め合わせセット
 半分全列挙
-巨大ナップサック問題
-蟻本p149の実装を参考に
+DP配列を容量とする
+DP配列を価値とする
+蟻本の実装を参考に
 */
