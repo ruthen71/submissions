@@ -80,114 +80,123 @@ ll modpow(ll a, ll N, ll mod) {
     return res;
 }
 
-void solve(int w, int h) {
-    if (w == 0 && h == 0) return;
-    vector<string> g(h);
-    rep(h) cin >> g[i];
-    // ピースに名前を付ける
-    vvii name(h, vii(w, -1));
-    int cnt = 0;
-    rep(i, h) {
-        rep(j, w) {
-            if (g[i][j] != '.' && name[i][j] == -1) {
-                queue<pii> que;
-                que.push(make_pair(i, j));
-                name[i][j] = cnt;
-                while (!que.empty()) {
-                    int cx = que.front().fi, cy = que.front().se;
-                    que.pop();
-                    rep(k, 4) {
-                        int nx = cx + dx[k], ny = cy + dy[k];
-                        if (0 <= nx && nx < h && 0 <= ny && ny < w && g[nx][ny] == g[i][j] && name[nx][ny] == -1) {
-                            name[nx][ny] = name[cx][cy];
-                            que.push({nx, ny});
-                        }
-                    }
+struct circle {
+    ld x, y, r;
+    int c;
+};
+
+int cross(circle &a, circle &b) {
+    ld dis = (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
+    return (sqrt(dis) < a.r + b.r);
+}
+/*
+int dfs(vector<circle> &d, vii s) {
+    int n = sz(d);
+    vii t(n, 1);  // 重なってないやつ=1、重なってるやつ=0
+    rep(j, n) {
+        if (s[j]) continue;
+        rep(i, j) {
+            if (s[i]) continue;
+            if (cross(d[i], d[j])) t[j] = 0;
+        }
+    }
+    show(t);
+    // 重なってないやつの各色の個数を数える
+    vii cnt(4, 0);
+    rep(i, n) {
+        if (s[i]) continue;
+        if (t[i]) cnt[d[i].c]++;
+    }
+    // 偶数枚の色のやつは全て取る
+    int res = 0;
+    rep(i, 4) {
+        if (cnt[i] % 2 == 0) {
+            rep(j, n) {
+                if (s[j]) continue;
+                if (d[j].c == i) s[j] = 0, res++;
+            }
+        }
+    }
+    // 奇数枚のやつの取りかたでDFSする
+    int res2 = 0;
+    rep(i, 4) {
+        if (cnt[i] % 2 == 1) {
+            int cur = 0;
+            vii candi;  // candidate
+            rep(j, n) {
+                if (s[j]) continue;
+                if (d[j].c == i) {
+                    candi.pb(j);
+                    s[j] = 0;
                 }
-                cnt++;
+            }
+            for (auto c : candi) {
+                s[c] = 1;
+                chmax(cur, dfs(d, s));
+                s[c] = 0;
+            }
+            chmax(res2, cur + sz(candi) - 1);
+            for (auto c : candi) {
+                s[c] = 1;
             }
         }
     }
-    show(cnt);
-    show(name);
-    // 各番号のピースがどの座標にあるかを求める
-    int V = cnt;
-    V2<pii> G(V);
-    rep(i, h) {
-        rep(j, w) {
-            if (name[i][j] != -1) G[name[i][j]].pb(make_pair(i, j));
-        }
+    chmax(res2, dfs(d, s));
+    return res + res2;
+}
+*/
+
+void solve(int n) {
+    if (n == 0) return;
+    vector<circle> d(n);
+    rep(n) {
+        cin >> d[i].x >> d[i].y >> d[i].r >> d[i].c;
+        d[i].c--;
     }
-    // 各ピースがどのピースに載っているか調べ、有向グラフで表す
-    V2<int> G2(V), G3(V);
-    rep(i, h - 1) {
-        rep(j, w) {
-            if (name[i][j] != -1 && name[i + 1][j] != -1 && name[i][j] != name[i + 1][j]) {
-                G2[name[i][j]].pb(name[i + 1][j]);
-                G3[name[i + 1][j]].pb(name[i][j]);
+
+    int n2 = (1 << n);
+    vii dp(n2, 0);
+    dp[n2 - 1] = 1;
+    rrep(bit, n2) {
+        if (dp[bit] == 0) continue;
+        vii t(n, 1);  // 重なってないやつ=1、重なってるやつ=0
+        rep(j, n) {
+            if ((bit >> j & 1) == 0) continue;
+            rep(i, j) {
+                if ((bit >> i & 1) == 0) continue;
+                if (cross(d[i], d[j])) t[j] = 0;
+            }
+        }
+        show(bit);
+        show(t);
+        rep(i, n) {
+            if ((bit >> i & 1) == 0) continue;
+            rep(j, i) {
+                if ((bit >> j & 1) == 0) continue;
+                if (t[i] == 1 && t[j] == 1 && d[i].c == d[j].c) {
+                    dp[bit - (1 << i) - (1 << j)] = 1;
+                    show(i) show(j);
+                }
             }
         }
     }
-    // 各ピースについて、載っているピースからxLとxRを求め
-    // DFSしてMも求める
-    rep(i, V) {
-        sort(all(G2[i]));
-        uniq(G2[i]);
-        sort(all(G3[i]));
-        uniq(G3[i]);
+    int ans = 0;
+    rrep(bit, n2) {
+        if (dp[bit]) chmax(ans, n - popcnt(bit));
     }
-    rep(i, V) {
-        int xl = 100, xr = -100;
-        for (auto ppp : G[i]) {
-            int x = ppp.fi, y = ppp.se;
-            if (x == h - 1) {
-                chmin(xl, ppp.se);
-                chmax(xr, ppp.se + 1);
-            } else if (name[x + 1][y] != name[x][y] && name[x + 1][y] != -1) {
-                chmin(xl, ppp.se);
-                chmax(xr, ppp.se + 1);
-            }
-        }
-        show(i);
-        show(xl);
-        show(xr);
-        queue<int> que;
-        que.push(i);
-        ld M = 0;
-        int num = 0;
-        while (!que.empty()) {
-            int id = que.front();
-            show(id);
-            que.pop();
-            num++;
-            for (int nx : G3[id]) que.push(nx);
-            for (auto ppp : G[id]) {
-                M += ppp.se + (ld)0.5;
-            }
-        }
-        M /= num * 4;
-        show(num);
-        show(M);
-        if (!(xl < M && M < xr)) {
-            puts("UNSTABLE");
-            return;
-        }
-    }
-    puts("STABLE");
-    return;
+    show(dp);
+    cout << ans << endl;
 }
 
 int main() {
-    int w, h;
-    while (cin >> w >> h) solve(w, h);
+    int n;
+    while (cin >> n) solve(n);
     return 0;
 }
 
 /*
 メモ
-ぐらぐら
-450点
-実装が重い
-グラフ(DAG)に変形して幅優先探索する
-
+dp[S]=集合Sとなる取り除き方が存在すれば1、存在しなければ0
+bitDP
+S=111...1から始める
 */

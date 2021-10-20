@@ -80,114 +80,43 @@ ll modpow(ll a, ll N, ll mod) {
     return res;
 }
 
-void solve(int w, int h) {
-    if (w == 0 && h == 0) return;
-    vector<string> g(h);
-    rep(h) cin >> g[i];
-    // ピースに名前を付ける
-    vvii name(h, vii(w, -1));
-    int cnt = 0;
-    rep(i, h) {
-        rep(j, w) {
-            if (g[i][j] != '.' && name[i][j] == -1) {
-                queue<pii> que;
-                que.push(make_pair(i, j));
-                name[i][j] = cnt;
-                while (!que.empty()) {
-                    int cx = que.front().fi, cy = que.front().se;
-                    que.pop();
-                    rep(k, 4) {
-                        int nx = cx + dx[k], ny = cy + dy[k];
-                        if (0 <= nx && nx < h && 0 <= ny && ny < w && g[nx][ny] == g[i][j] && name[nx][ny] == -1) {
-                            name[nx][ny] = name[cx][cy];
-                            que.push({nx, ny});
-                        }
-                    }
-                }
-                cnt++;
-            }
+void solve(int h, int w) {
+    if (h == 0 && w == 0) return;
+    vii a(h), b(w);
+    rep(h) cin >> a[i];
+    rep(w) cin >> b[i];
+    sort(all(a));
+    sort(all(b));
+    int hi = h - 1, wi = w - 1;
+    int ans = 0;
+    while (hi >= 0 || wi >= 0) {
+        if (hi >= 0 && wi >= 0) {
+            int v = max(a[hi], b[wi]);
+            ans += v;
+            if (a[hi] == v) hi--;
+            if (b[wi] == v) wi--;
+        } else if (hi >= 0) {
+            // wi < 0
+            ans += a[hi--];
+        } else {
+            // hi < 0
+            ans += b[wi--];
         }
     }
-    show(cnt);
-    show(name);
-    // 各番号のピースがどの座標にあるかを求める
-    int V = cnt;
-    V2<pii> G(V);
-    rep(i, h) {
-        rep(j, w) {
-            if (name[i][j] != -1) G[name[i][j]].pb(make_pair(i, j));
-        }
-    }
-    // 各ピースがどのピースに載っているか調べ、有向グラフで表す
-    V2<int> G2(V), G3(V);
-    rep(i, h - 1) {
-        rep(j, w) {
-            if (name[i][j] != -1 && name[i + 1][j] != -1 && name[i][j] != name[i + 1][j]) {
-                G2[name[i][j]].pb(name[i + 1][j]);
-                G3[name[i + 1][j]].pb(name[i][j]);
-            }
-        }
-    }
-    // 各ピースについて、載っているピースからxLとxRを求め
-    // DFSしてMも求める
-    rep(i, V) {
-        sort(all(G2[i]));
-        uniq(G2[i]);
-        sort(all(G3[i]));
-        uniq(G3[i]);
-    }
-    rep(i, V) {
-        int xl = 100, xr = -100;
-        for (auto ppp : G[i]) {
-            int x = ppp.fi, y = ppp.se;
-            if (x == h - 1) {
-                chmin(xl, ppp.se);
-                chmax(xr, ppp.se + 1);
-            } else if (name[x + 1][y] != name[x][y] && name[x + 1][y] != -1) {
-                chmin(xl, ppp.se);
-                chmax(xr, ppp.se + 1);
-            }
-        }
-        show(i);
-        show(xl);
-        show(xr);
-        queue<int> que;
-        que.push(i);
-        ld M = 0;
-        int num = 0;
-        while (!que.empty()) {
-            int id = que.front();
-            show(id);
-            que.pop();
-            num++;
-            for (int nx : G3[id]) que.push(nx);
-            for (auto ppp : G[id]) {
-                M += ppp.se + (ld)0.5;
-            }
-        }
-        M /= num * 4;
-        show(num);
-        show(M);
-        if (!(xl < M && M < xr)) {
-            puts("UNSTABLE");
-            return;
-        }
-    }
-    puts("STABLE");
+    cout << ans << endl;
     return;
 }
 
 int main() {
-    int w, h;
-    while (cin >> w >> h) solve(w, h);
+    int h, w;
+    while (cin >> h >> w) solve(h, w);
     return 0;
 }
 
 /*
 メモ
-ぐらぐら
-450点
-実装が重い
-グラフ(DAG)に変形して幅優先探索する
-
+AOJ-ICPCで評価が高い
+"Notice that swapping columns of cubes does not change the side view."
+よりソートしてみようとなる
+あとは高い順に取っていく
 */

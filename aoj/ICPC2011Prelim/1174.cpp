@@ -80,114 +80,87 @@ ll modpow(ll a, ll N, ll mod) {
     return res;
 }
 
-void solve(int w, int h) {
-    if (w == 0 && h == 0) return;
-    vector<string> g(h);
-    rep(h) cin >> g[i];
-    // ピースに名前を付ける
-    vvii name(h, vii(w, -1));
-    int cnt = 0;
-    rep(i, h) {
-        rep(j, w) {
-            if (g[i][j] != '.' && name[i][j] == -1) {
-                queue<pii> que;
-                que.push(make_pair(i, j));
-                name[i][j] = cnt;
-                while (!que.empty()) {
-                    int cx = que.front().fi, cy = que.front().se;
-                    que.pop();
-                    rep(k, 4) {
-                        int nx = cx + dx[k], ny = cy + dy[k];
-                        if (0 <= nx && nx < h && 0 <= ny && ny < w && g[nx][ny] == g[i][j] && name[nx][ny] == -1) {
-                            name[nx][ny] = name[cx][cy];
-                            que.push({nx, ny});
-                        }
-                    }
+int ans = 0;
+
+void dfs(vvii g, int cnt, int c, int col) {
+    // show(cnt) show(col);
+    int h = sz(g), w = sz(g[0]);
+    if (cnt == 4 && col != c) return;
+
+    // g[0][0]をcolで塗る
+    int curc = g[0][0];
+    queue<pii> que;
+    vvii seen(h, vii(w, 0));
+    que.push({0, 0});
+    g[0][0] = col;
+    while (que.size()) {
+        int cx = que.front().first, cy = que.front().second;
+        que.pop();
+        if (seen[cx][cy]) continue;
+        seen[cx][cy] = 1;
+        rep(i, 4) {
+            int nx = cx + dx[i], ny = cy + dy[i];
+            if (0 <= nx && nx < h && 0 <= ny && ny < w && seen[nx][ny] == 0 && g[nx][ny] == curc) {
+                g[nx][ny] = col;
+                que.push({nx, ny});
+            }
+        }
+    }
+
+    if (cnt == 4) {
+        int res = 0;
+        vvii seen2(h, vii(w, 0));
+        queue<pii> que2;
+        que2.push({0, 0});
+        while (que2.size()) {
+            int cx = que2.front().first, cy = que2.front().second;
+            que2.pop();
+            if (seen2[cx][cy]) continue;
+            seen2[cx][cy] = 1;
+            res++;
+            rep(i, 4) {
+                int nx = cx + dx[i], ny = cy + dy[i];
+                if (0 <= nx && nx < h && 0 <= ny && ny < w && seen2[nx][ny] == 0 && g[nx][ny] == c) {
+                    que2.push({nx, ny});
                 }
-                cnt++;
             }
         }
+        chmax(ans, res);
+        return;
     }
-    show(cnt);
-    show(name);
-    // 各番号のピースがどの座標にあるかを求める
-    int V = cnt;
-    V2<pii> G(V);
-    rep(i, h) {
-        rep(j, w) {
-            if (name[i][j] != -1) G[name[i][j]].pb(make_pair(i, j));
-        }
+    rep(i, 6) {
+        if (i != g[0][0]) dfs(g, cnt + 1, c, i);
     }
-    // 各ピースがどのピースに載っているか調べ、有向グラフで表す
-    V2<int> G2(V), G3(V);
-    rep(i, h - 1) {
-        rep(j, w) {
-            if (name[i][j] != -1 && name[i + 1][j] != -1 && name[i][j] != name[i + 1][j]) {
-                G2[name[i][j]].pb(name[i + 1][j]);
-                G3[name[i + 1][j]].pb(name[i][j]);
-            }
-        }
+    return;
+}
+
+void solve(int h, int w, int c) {
+    if (h == 0 && w == 0) return;
+
+    vvii g(h, vii(w));
+    c--;
+    rep(i, h) rep(j, w) {
+        cin >> g[i][j];
+        g[i][j]--;
     }
-    // 各ピースについて、載っているピースからxLとxRを求め
-    // DFSしてMも求める
-    rep(i, V) {
-        sort(all(G2[i]));
-        uniq(G2[i]);
-        sort(all(G3[i]));
-        uniq(G3[i]);
+    ans = 0;
+    rep(i, 6) {
+        if (i != g[0][0]) dfs(g, 0, c, i);
     }
-    rep(i, V) {
-        int xl = 100, xr = -100;
-        for (auto ppp : G[i]) {
-            int x = ppp.fi, y = ppp.se;
-            if (x == h - 1) {
-                chmin(xl, ppp.se);
-                chmax(xr, ppp.se + 1);
-            } else if (name[x + 1][y] != name[x][y] && name[x + 1][y] != -1) {
-                chmin(xl, ppp.se);
-                chmax(xr, ppp.se + 1);
-            }
-        }
-        show(i);
-        show(xl);
-        show(xr);
-        queue<int> que;
-        que.push(i);
-        ld M = 0;
-        int num = 0;
-        while (!que.empty()) {
-            int id = que.front();
-            show(id);
-            que.pop();
-            num++;
-            for (int nx : G3[id]) que.push(nx);
-            for (auto ppp : G[id]) {
-                M += ppp.se + (ld)0.5;
-            }
-        }
-        M /= num * 4;
-        show(num);
-        show(M);
-        if (!(xl < M && M < xr)) {
-            puts("UNSTABLE");
-            return;
-        }
-    }
-    puts("STABLE");
+    cout << ans << endl;
+
     return;
 }
 
 int main() {
-    int w, h;
-    while (cin >> w >> h) solve(w, h);
+    int h, w, c;
+    while (cin >> h >> w >> c) solve(h, w, c);
     return 0;
 }
 
 /*
 メモ
-ぐらぐら
-450点
-実装が重い
-グラフ(DAG)に変形して幅優先探索する
-
+ICPC2012予選
+グリッド
+全探索を書く
 */

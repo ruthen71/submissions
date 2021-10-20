@@ -80,114 +80,51 @@ ll modpow(ll a, ll N, ll mod) {
     return res;
 }
 
-void solve(int w, int h) {
-    if (w == 0 && h == 0) return;
-    vector<string> g(h);
-    rep(h) cin >> g[i];
-    // ピースに名前を付ける
-    vvii name(h, vii(w, -1));
-    int cnt = 0;
-    rep(i, h) {
-        rep(j, w) {
-            if (g[i][j] != '.' && name[i][j] == -1) {
-                queue<pii> que;
-                que.push(make_pair(i, j));
-                name[i][j] = cnt;
-                while (!que.empty()) {
-                    int cx = que.front().fi, cy = que.front().se;
-                    que.pop();
-                    rep(k, 4) {
-                        int nx = cx + dx[k], ny = cy + dy[k];
-                        if (0 <= nx && nx < h && 0 <= ny && ny < w && g[nx][ny] == g[i][j] && name[nx][ny] == -1) {
-                            name[nx][ny] = name[cx][cy];
-                            que.push({nx, ny});
-                        }
-                    }
-                }
-                cnt++;
-            }
+ld f(int r, int cr) {
+    ld ret = r * r - cr * cr;
+    return sqrt(ret);
+}
+
+void solve(int r, int n) {
+    if (r == 0 && n == 0) return;
+    vii x(n), y(n), h(n);
+    rep(n) cin >> x[i] >> y[i] >> h[i];
+    // 各区間の高さのmaxをもつ
+    vii hm(40, 0);
+    rep(i, n) rep(j, x[i], y[i]) chmax(hm[j + 20], h[i]);
+    show(hm);
+    ld ub = 100, lb = 0;
+    rep(tt, 100) {
+        show(ub);
+        show(lb);
+        ld t = (ub + lb) / 2;
+        show(t);
+        ld c = t - r;
+        int ok = 1;
+        rep(rr, -r, r) {
+            ld m = max(f(r, rr), f(r, rr + 1));
+            show(rr);
+            show(m);
+            if (hm[rr + 20] < m + c) ok = 0;
         }
+        show(ok);
+        if (!ok)
+            ub = t;
+        else
+            lb = t;
     }
-    show(cnt);
-    show(name);
-    // 各番号のピースがどの座標にあるかを求める
-    int V = cnt;
-    V2<pii> G(V);
-    rep(i, h) {
-        rep(j, w) {
-            if (name[i][j] != -1) G[name[i][j]].pb(make_pair(i, j));
-        }
-    }
-    // 各ピースがどのピースに載っているか調べ、有向グラフで表す
-    V2<int> G2(V), G3(V);
-    rep(i, h - 1) {
-        rep(j, w) {
-            if (name[i][j] != -1 && name[i + 1][j] != -1 && name[i][j] != name[i + 1][j]) {
-                G2[name[i][j]].pb(name[i + 1][j]);
-                G3[name[i + 1][j]].pb(name[i][j]);
-            }
-        }
-    }
-    // 各ピースについて、載っているピースからxLとxRを求め
-    // DFSしてMも求める
-    rep(i, V) {
-        sort(all(G2[i]));
-        uniq(G2[i]);
-        sort(all(G3[i]));
-        uniq(G3[i]);
-    }
-    rep(i, V) {
-        int xl = 100, xr = -100;
-        for (auto ppp : G[i]) {
-            int x = ppp.fi, y = ppp.se;
-            if (x == h - 1) {
-                chmin(xl, ppp.se);
-                chmax(xr, ppp.se + 1);
-            } else if (name[x + 1][y] != name[x][y] && name[x + 1][y] != -1) {
-                chmin(xl, ppp.se);
-                chmax(xr, ppp.se + 1);
-            }
-        }
-        show(i);
-        show(xl);
-        show(xr);
-        queue<int> que;
-        que.push(i);
-        ld M = 0;
-        int num = 0;
-        while (!que.empty()) {
-            int id = que.front();
-            show(id);
-            que.pop();
-            num++;
-            for (int nx : G3[id]) que.push(nx);
-            for (auto ppp : G[id]) {
-                M += ppp.se + (ld)0.5;
-            }
-        }
-        M /= num * 4;
-        show(num);
-        show(M);
-        if (!(xl < M && M < xr)) {
-            puts("UNSTABLE");
-            return;
-        }
-    }
-    puts("STABLE");
+    printf("%.10Lf\n", ub);
+
     return;
 }
 
 int main() {
-    int w, h;
-    while (cin >> w >> h) solve(w, h);
+    int r, n;
+    while (cin >> r >> n) solve(r, n);
     return 0;
 }
 
 /*
 メモ
-ぐらぐら
-450点
-実装が重い
-グラフ(DAG)に変形して幅優先探索する
-
+実数の二分探索
 */
