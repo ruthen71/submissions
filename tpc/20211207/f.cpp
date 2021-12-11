@@ -8,12 +8,6 @@ using ll = long long;
 ll dx[8] = {2, 1, -1, -2, -2, -1, 1, 2};
 ll dy[8] = {1, 2, 2, 1, -1, -2, -2, -1};
 
-int dp[105][105][12];
-
-struct info {
-    int x, y, c;
-};
-
 int ans[2];
 
 void solve() {
