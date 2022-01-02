@@ -42,13 +42,18 @@ int main() {
         int N2 = uf.size(i);
         vector<int> seen(N, 0);
         // 連結成分ごとにグラフを構築
+        dsu uf2(N);
         vector<vector<int>> g(N);
         set<int> S;
         for (auto &e : es[i]) {
-            g[A[e]].push_back(B[e]);
-            g[B[e]].push_back(A[e]);
-            S.insert(A[e]);
-            S.insert(B[e]);
+            if (!uf2.same(A[e], B[e])) {
+                // 全域木に必要な辺のみ追加(1600ms->60ms)
+                g[A[e]].push_back(B[e]);
+                g[B[e]].push_back(A[e]);
+                uf2.merge(A[e], B[e]);
+                S.insert(A[e]);
+                S.insert(B[e]);
+            }
         }
         while (N2--) {
             // BFS
