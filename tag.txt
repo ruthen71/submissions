@@ -5,9 +5,29 @@
 ・英語で記述できるものは英語で
 ・アルゴリズム名などは基本的に1文字目だけ大文字(一部例外あり)
 
+【感想】
+良問
+解説AC(解説を見た)
+
+【グラフ】
 BFS(幅優先探索)
 DFS(深さ優先探索)
 Dijkstra法(ダイクストラ法、dijkstra法)
+Kruskal法(クラスカル法、kruskal法)
+
+【素数系】
+エラトステネスの篩(篩、Eratosthenesの篩)
+
+【考察】
 bit全探索(BIT全探索)
-Zero-Sum Ranges(Zero Sum Ranges, zero sum ranges など)
+Zero-Sum Ranges(Zero Sum Ranges, zero sum ranges)
+
+【データ構造】
+Segment Tree(セグメントツリー、セグメント木、セグ木)
+Fenwick Tree(フェニック木、BIT)
+Lazy Segment Tree(遅延セグメント木、遅延セグ木)
+
+【DP】
+桁DP(Digit DP、桁dp、digit dpなど)
+
 
