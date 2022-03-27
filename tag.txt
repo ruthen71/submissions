@@ -26,6 +26,7 @@ Ford-Fulkerson法(ford-fulkerson法)
 
 【テクニック】
 繰り返し二乗法(繰り返し自乗法)
+ダブリング(Doubling)
 包除原理(包除)
 二分探索(2分探索,binary-search)
 三分探索(3分探索)
@@ -39,8 +40,11 @@ Zero-Sum Ranges(Zero Sum Ranges, zero sum ranges)
 Segment Tree(セグメントツリー、セグメント木、セグ木)
 Fenwick Tree(フェニック木、BIT)
 Lazy Segment Tree(遅延セグメント木、遅延セグ木)
+マージテク(データ構造をマージする一般的なテク,デマテク)
 
 【DP】
 桁DP(Digit DP、桁dp、digit dpなど)
+挿入DP
 
-
+【言語特有】
+__int128(int128)
