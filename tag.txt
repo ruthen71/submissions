@@ -24,6 +24,15 @@ Ford-Fulkerson法(ford-fulkerson法)
 【整数系】
 エラトステネスの篩(篩、Eratosthenesの篩)
 
+【数え上げ】
+二項係数(binomial)
+攪乱順列(完全順列)
+
+【貪欲法(貪欲)】
+
+【文字列】
+括弧列
+
 【テクニック】
 繰り返し二乗法(繰り返し自乗法)
 ダブリング(Doubling)
@@ -45,6 +54,9 @@ Lazy Segment Tree(遅延セグメント木、遅延セグ木)
 【DP】
 桁DP(Digit DP、桁dp、digit dpなど)
 挿入DP
+
+【ゲーム】
+Nim(二ム、NIM)
 
 【言語特有】
 __int128(int128)
